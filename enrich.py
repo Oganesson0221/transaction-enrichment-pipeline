@@ -39,29 +39,29 @@ def classify_transaction(row):
     is_credit_card_expense = False
     reason = "Fallback"
 
-    merchant = extract_merchant(description)
-    if merchant:
-        merchant_classification = merchant
-        normalized_entity = merchant
-        transaction_classification = "Merchant Payment"
-        reason = f"Specific Merchant Rule: {merchant}"
-
-    elif is_keyword_present(description, PAYMENT_RAIL_KEYWORDS):
-        transaction_classification = "Payment Rail Transaction"
-        reason = "Payment Rail Rule"
-
-    elif amount_usd > 0 and ("marketplace" in description.lower() or "ecommerce" in description.lower()):
-        transaction_classification = "Ecommerce Purchase"
-        reason = "General Semantic Rule: Ecommerce"
-
-    elif amount_usd < 0 and ("loan" in description.lower() or "payment" in description.lower() or "credit card" in description.lower()):
-        transaction_classification = "Credit Card Payment"
-        is_credit_card_expense = True
-        reason = "General Semantic Rule: Credit Card Payment"
-
     if is_keyword_present(description, TAX_KEYWORDS):
         transaction_classification = "Tax Related"
-        reason = "General Semantic Rule: Tax Related"
+        reason = "Tax Related Rule"
+    else:
+        merchant = extract_merchant(description)
+        if merchant:
+            merchant_classification = merchant
+            normalized_entity = merchant
+            transaction_classification = "Merchant Payment"
+            reason = f"Specific Merchant Rule: {merchant}"
+
+        elif is_keyword_present(description, PAYMENT_RAIL_KEYWORDS):
+            transaction_classification = "Payment Rail Transaction"
+            reason = "Payment Rail Rule"
+
+        elif amount_usd > 0 and ("marketplace" in description.lower() or "ecommerce" in description.lower()):
+            transaction_classification = "Ecommerce Purchase"
+            reason = "General Semantic Rule: Ecommerce"
+
+        elif amount_usd < 0 and ("loan" in description.lower() or "payment" in description.lower() or "credit card" in description.lower()):
+            transaction_classification = "Credit Card Payment"
+            is_credit_card_expense = True
+            reason = "General Semantic Rule: Credit Card Payment"
 
     return pd.Series([
         transaction_classification,
