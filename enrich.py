@@ -1,95 +1,102 @@
 import pandas as pd
 import numpy as np
-import re
+from typing import Dict, Any
 
-MERCHANT_LOOKUP = {
-    "capital one": "Capital One",
-    "shopify capital": "Shopify Capital",
-    "amazon": "Amazon",
-    "starbucks": "Starbucks",
-    "netflix": "Netflix",
-}
+from schema import EnrichedTransactionSchema
+from rules import (
+    rule_tax_related,
+    rule_specific_merchant,
+    rule_payment_rail,
+    rule_ecommerce_purchase,
+    rule_credit_card_payment,
+    rule_fallback
+)
 
-TAX_KEYWORDS = [
-    "tax", "irs", "hmrc", "revenue service"
-]
-
-PAYMENT_RAIL_KEYWORDS = [
-    "visa", "zelle", "paypal", "afterpay", "mastercard", "amex", "square", "stripe"
-]
-
-def is_keyword_present(text, keywords):
-    return any(re.search(r'\b' + re.escape(keyword) + r'\b', text, re.IGNORECASE) for keyword in keywords)
-
-def extract_merchant(description):
-    description_lower = description.lower()
-    for keyword, merchant_name in MERCHANT_LOOKUP.items():
-        if keyword in description_lower:
-            return merchant_name
-    return None
-
-def classify_transaction(row):
+def enrich_transaction_record(row) -> EnrichedTransactionSchema:
     description = str(row['Description'])
     amount_usd = row['AmountUSD']
 
-    transaction_classification = "Other"
-    merchant_classification = "Other"
-    normalized_entity = "Other"
-    transaction_name = description
-    is_credit_card_expense = False
-    reason = "Fallback"
+    # Initialize with fallback values
+    enriched_data: EnrichedTransactionSchema = {
+        "TransactionClassification": "Other",
+        "MerchantClassification": "Other",
+        "NormalizedEntity": "Other",
+        "TransactionName": description,
+        "IsCreditCardExpense": False,
+        "Reason": "Fallback",
+        "Confidence": 0.0,
+        "RuleHit": "RULE_FALLBACK"
+    }
 
-    if is_keyword_present(description, TAX_KEYWORDS):
-        transaction_classification = "Tax Related"
-        reason = "Tax Related Rule"
-    else:
-        merchant = extract_merchant(description)
-        if merchant:
-            merchant_classification = merchant
-            normalized_entity = merchant
-            transaction_classification = "Merchant Payment"
-            reason = f"Specific Merchant Rule: {merchant}"
+    # Apply rules in priority order (first match wins)
+    # Tax-related rules (highest confidence)
+    result = rule_tax_related(description, amount_usd)
+    if result:
+        fields, confidence, rule_id = result
+        enriched_data.update(fields)
+        enriched_data["Confidence"] = confidence
+        enriched_data["RuleHit"] = rule_id
+        enriched_data["Reason"] = "Tax-related transaction detected."
+        return enriched_data
 
-        elif is_keyword_present(description, PAYMENT_RAIL_KEYWORDS):
-            transaction_classification = "Payment Rail Transaction"
-            reason = "Payment Rail Rule"
+    # Specific merchant rules
+    result = rule_specific_merchant(description, amount_usd)
+    if result:
+        fields, confidence, rule_id = result
+        enriched_data.update(fields)
+        enriched_data["Confidence"] = confidence
+        enriched_data["RuleHit"] = rule_id
+        enriched_data["Reason"] = f"Match found for specific merchant: {fields['MerchantClassification']}"
+        return enriched_data
 
-        elif amount_usd > 0 and ("marketplace" in description.lower() or "ecommerce" in description.lower()):
-            transaction_classification = "Ecommerce Purchase"
-            reason = "General Semantic Rule: Ecommerce"
+    # Payment rail rules
+    result = rule_payment_rail(description, amount_usd)
+    if result:
+        fields, confidence, rule_id = result
+        enriched_data.update(fields)
+        enriched_data["Confidence"] = confidence
+        enriched_data["RuleHit"] = rule_id
+        enriched_data["Reason"] = "Payment rail keyword detected."
+        return enriched_data
 
-        elif amount_usd < 0 and ("loan" in description.lower() or "payment" in description.lower() or "credit card" in description.lower()):
-            transaction_classification = "Credit Card Payment"
-            is_credit_card_expense = True
-            reason = "General Semantic Rule: Credit Card Payment"
+    # General semantic rules
+    result = rule_ecommerce_purchase(description, amount_usd)
+    if result:
+        fields, confidence, rule_id = result
+        enriched_data.update(fields)
+        enriched_data["Confidence"] = confidence
+        enriched_data["RuleHit"] = rule_id
+        enriched_data["Reason"] = "Ecommerce purchase identified."
+        return enriched_data
 
-    return pd.Series([
-        transaction_classification,
-        merchant_classification,
-        normalized_entity,
-        transaction_name,
-        is_credit_card_expense,
-        reason
-    ], index=[
-        'TransactionClassification',
-        'MerchantClassification',
-        'NormalizedEntity',
-        'TransactionName',
-        'IsCreditCardExpense',
-        'Reason'
-    ])
+    result = rule_credit_card_payment(description, amount_usd)
+    if result:
+        fields, confidence, rule_id = result
+        enriched_data.update(fields)
+        enriched_data["Confidence"] = confidence
+        enriched_data["RuleHit"] = rule_id
+        enriched_data["Reason"] = "Credit card payment identified."
+        return enriched_data
+
+    # Fallback rule
+    fields, confidence, rule_id = rule_fallback(description, amount_usd)
+    enriched_data.update(fields)
+    enriched_data["Confidence"] = confidence
+    enriched_data["RuleHit"] = rule_id
+    enriched_data["Reason"] = "No specific rule matched; defaulted to fallback."
+    return enriched_data
 
 def enrich_transactions(input_file: str, output_file: str):
     df = pd.read_excel(input_file)
 
-    df[[
-        'TransactionClassification',
-        'MerchantClassification',
-        'NormalizedEntity',
-        'TransactionName',
-        'IsCreditCardExpense',
-        'Reason'
-    ]] = df.apply(classify_transaction, axis=1)
+    enriched_df = df.apply(enrich_transaction_record, axis=1, result_type='expand')
+
+    # Merge the original DataFrame with the enriched columns
+    df = pd.concat([df.drop(columns=list(EnrichedTransactionSchema.__annotations__.keys()), errors='ignore'), enriched_df], axis=1)
+
+    # Ensure all schema columns are present and in the correct order
+    final_columns = list(EnrichedTransactionSchema.__annotations__.keys())
+    df = df[final_columns + [col for col in df.columns if col not in final_columns]]
 
     df.to_excel(output_file, index=False)
     print(f"Enriched data written to {output_file}")
