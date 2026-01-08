@@ -17,9 +17,9 @@ class EnrichmentResponse(BaseModel):
 def enrich_endpoint(payload: TransactionInput):
     # Immutability preserved: copy into DF
     raw_df = pd.DataFrame(payload.transactions)
-    tmp_file = "tmp.xlsx"
-    raw_df.to_excel(tmp_file, index=False)
-    preprocessed_df = preprocess_transactions(tmp_file, output_file=None)
+    
+    # Process directly from DataFrame (no temp file needed)
+    preprocessed_df = preprocess_transactions(df=raw_df)
 
     enriched_df = enrich_transactions(preprocessed_df)
 
