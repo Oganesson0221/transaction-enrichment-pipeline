@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 import re
 
-def preprocess_transactions(input_file: str, output_file: str):
+def preprocess_transactions(input_file: str, output_file: str=None):
     df = pd.read_excel(input_file)
 
     df = df.rename(columns={

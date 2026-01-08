@@ -18,7 +18,8 @@ def enrich_endpoint(payload: TransactionInput):
     # Immutability preserved: copy into DF
     raw_df = pd.DataFrame(payload.transactions)
 
-    preprocessed_df = preprocess_transactions(raw_df)
+    preprocessed_df = preprocess_transactions(raw_df, output_file=None)
+
     enriched_df = enrich_transactions(preprocessed_df)
 
     return {
