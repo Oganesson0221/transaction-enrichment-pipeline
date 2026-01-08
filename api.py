@@ -21,7 +21,7 @@ def enrich_endpoint(payload: TransactionInput):
     # Process directly from DataFrame (no temp file needed)
     preprocessed_df = preprocess_transactions(df=raw_df)
 
-    enriched_df = enrich_transactions(preprocessed_df)
+    enriched_df = enrich_transactions(df=preprocessed_df)
 
     return {
         "enriched_transactions": enriched_df.to_dict(orient="records")

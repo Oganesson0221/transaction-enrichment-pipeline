@@ -43,8 +43,20 @@ def enrich_transaction_record(row) -> EnrichedTransactionSchema:
     enriched_data["RuleHit"] = rule_id
     return enriched_data
 
-def enrich_transactions(input_file: str, output_file: str):
-    df = pd.read_excel(input_file)
+def enrich_transactions(input_file: str = None, output_file: str = None, df: pd.DataFrame = None):
+    """
+    Enrich transactions from either an Excel file or a DataFrame.
+    
+    Args:
+        input_file: Path to Excel file (used when processing files)
+        output_file: Path to output Excel file (optional)
+        df: DataFrame to process directly (used by API)
+    
+    Returns:
+        Enriched DataFrame
+    """
+    if df is None:
+        df = pd.read_excel(input_file)
 
     enriched_df = df.apply(enrich_transaction_record, axis=1, result_type='expand')
 
@@ -70,10 +82,13 @@ def enrich_transactions(input_file: str, output_file: str):
     
     all_expected_columns_ordered = original_preserved_columns + [col for col in list(EnrichedTransactionSchema.__annotations__.keys()) if col not in original_preserved_columns]
     
-    df = final_output_df[all_expected_columns_ordered]
+    result_df = final_output_df[all_expected_columns_ordered]
 
-    df.to_excel(output_file, index=False)
-    print(f"Enriched data written to {output_file}")
+    if output_file:
+        result_df.to_excel(output_file, index=False)
+        print(f"Enriched data written to {output_file}")
+    
+    return result_df
 
 if __name__ == "__main__":
     input_excel_file = "data/processed/transactions_cleaned.xlsx"
