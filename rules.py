@@ -161,7 +161,7 @@ def rule_rag_fallback(
                     "NormalizedEntity": entry["normalized_entity"],
                     "TransactionName": description,
                     "IsCreditCardExpense": False,
-                    "Reason": f"RAG match based on: {surface_form} - {entry["explanation"]}"
+                    "Reason": f"RAG match based on: {surface_form} - {entry['explanation']}"
                 }, 0.6, "RULE_RAG_FALLBACK"
     return None
 
