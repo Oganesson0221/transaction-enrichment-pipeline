@@ -70,10 +70,20 @@ def enrich_transactions(input_file: str, output_file: str):
     # Ensure columns are in the correct order as per schema
     enriched_df = enriched_df[list(EnrichedTransactionSchema.__annotations__.keys())]
 
-    # Original columns that are not part of the schema (e.g., TransactionDate, AmountUSD from preprocess.py)
-    # should be preserved if they are not overwritten by enrichment.
-    # The previous enrichment output did not keep these, so I will ensure only the enriched columns are in the final output.
-    df = enriched_df
+    # Original columns from preprocess.py that should be preserved in the final output.
+    original_preserved_columns = ['TransactionDate', 'Description', 'Category', 'AmountUSD', 'Balance']
+    
+    # Combine original preserved columns with the new enriched columns
+    # Ensure original_preserved_columns are at the beginning
+    final_output_df = pd.concat([df[original_preserved_columns], enriched_df], axis=1)
+    
+    # Now, ensure all schema columns are present and in the correct order
+    # This also handles cases where some schema fields might overlap with original_preserved_columns
+    # and ensures no duplication or incorrect ordering.
+    all_expected_columns_ordered = original_preserved_columns + [col for col in list(EnrichedTransactionSchema.__annotations__.keys()) if col not in original_preserved_columns]
+    
+    # Reorder the final DataFrame according to all_expected_columns_ordered
+    df = final_output_df[all_expected_columns_ordered]
 
     df.to_excel(output_file, index=False)
     print(f"Enriched data written to {output_file}")
