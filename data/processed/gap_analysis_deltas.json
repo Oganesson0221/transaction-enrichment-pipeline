@@ -1,0 +1,80 @@
+{
+    "fallback_percentage_delta": -40.35528440696214,
+    "baseline_fallback_percentage": 63.41288354566661,
+    "post_rag_fallback_percentage": 23.057599138704468,
+    "rag_fallback_percentage_delta": 40.35528440696214,
+    "baseline_rag_fallback_percentage": 0.0,
+    "post_rag_rag_fallback_percentage": 40.35528440696214,
+    "fallback_descriptions_added": [
+        "electronic withdrawal state of",
+        "electronic withdrawal oklahomataxpmts",
+        "electronic withdrawal wvtreasury",
+        "verizon wireless",
+        "web authorized pmt google",
+        "electronic withdrawal va dept taxation",
+        "electronic withdrawal az dept of rev",
+        "venmo",
+        "electronic withdrawal co dept revenue"
+    ],
+    "fallback_descriptions_removed": [
+        "walmart",
+        "electronic deposit shopify",
+        "electronic deposit tiktok inc",
+        "electronic deposit global - e",
+        "electronic deposit shoppayinst afrm",
+        "electronic withdrawal mbfs.com",
+        "paychex",
+        "electronic withdrawal wayflyer",
+        "electronic deposit tiktok shop"
+    ],
+    "baseline_top_fallback_descriptions": {
+        "electronic deposit shoppayinst afrm": 909,
+        "electronic deposit shopify": 596,
+        "electronic deposit tiktok inc": 293,
+        "paychex": 214,
+        "electronic withdrawal mbfs.com": 56,
+        "electronic deposit global - e": 48,
+        "electronic deposit tiktok shop": 48,
+        "electronic withdrawal wayflyer": 41,
+        "mobile check deposit": 38,
+        "walmart": 25
+    },
+    "post_rag_top_fallback_descriptions": {
+        "mobile check deposit": 38,
+        "verizon wireless": 24,
+        "electronic withdrawal co dept revenue": 23,
+        "web authorized pmt google": 21,
+        "electronic withdrawal va dept taxation": 16,
+        "electronic withdrawal az dept of rev": 16,
+        "electronic withdrawal state of": 14,
+        "electronic withdrawal wvtreasury": 14,
+        "venmo": 14,
+        "electronic withdrawal oklahomataxpmts": 13
+    },
+    "avg_confidence_per_rule_deltas": {
+        "RULE_TAX_KEYWORD": 0.0,
+        "RULE_CREDIT_CARD_PAYMENT": 0.0,
+        "RULE_PAYMENT_RAIL": 0.0,
+        "RULE_FALLBACK": 0.0,
+        "RULE_MERCHANT_LOOKUP": 0.0,
+        "RULE_RAG_FALLBACK": 0.6
+    },
+    "baseline_avg_confidence_per_rule": {
+        "RULE_CREDIT_CARD_PAYMENT": 0.7,
+        "RULE_FALLBACK": 0.1,
+        "RULE_MERCHANT_LOOKUP": 0.9,
+        "RULE_PAYMENT_RAIL": 0.8,
+        "RULE_TAX_KEYWORD": 1.0
+    },
+    "post_rag_avg_confidence_per_rule": {
+        "RULE_CREDIT_CARD_PAYMENT": 0.7,
+        "RULE_FALLBACK": 0.1,
+        "RULE_MERCHANT_LOOKUP": 0.9,
+        "RULE_PAYMENT_RAIL": 0.8,
+        "RULE_RAG_FALLBACK": 0.6,
+        "RULE_TAX_KEYWORD": 1.0
+    },
+    "overall_avg_confidence_delta": 0.20177642203481067,
+    "baseline_overall_avg_confidence": 0.37376637358693704,
+    "post_rag_overall_avg_confidence": 0.5755427956217477
+}
