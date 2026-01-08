@@ -32,8 +32,9 @@ def rule_tax_related(
             "TransactionClassification": "Tax Related",
             "MerchantClassification": "Tax Authority",
             "NormalizedEntity": "Tax Authority",
+            "TransactionName": description,
             "IsCreditCardExpense": False,
-            "TransactionName": description
+            "Reason": "Tax-related transaction detected."
         }, 1.0, "RULE_TAX_KEYWORD"
     return None
 
@@ -53,8 +54,9 @@ def rule_specific_merchant(
             "TransactionClassification": "Merchant Payment",
             "MerchantClassification": merchant,
             "NormalizedEntity": merchant,
+            "TransactionName": description,
             "IsCreditCardExpense": False,
-            "TransactionName": description
+            "Reason": f"Match found for specific merchant: {merchant}"
         }, 0.9, "RULE_MERCHANT_LOOKUP"
     return None
 
@@ -67,8 +69,9 @@ def rule_payment_rail(
             "TransactionClassification": "Payment Rail Transaction",
             "MerchantClassification": "Payment Processor",
             "NormalizedEntity": "Payment Processor",
+            "TransactionName": description,
             "IsCreditCardExpense": False,
-            "TransactionName": description
+            "Reason": "Payment rail keyword detected."
         }, 0.8, "RULE_PAYMENT_RAIL"
     return None
 
@@ -81,8 +84,9 @@ def rule_ecommerce_purchase(
             "TransactionClassification": "Ecommerce Purchase",
             "MerchantClassification": "Online Marketplace",
             "NormalizedEntity": "Online Marketplace",
+            "TransactionName": description,
             "IsCreditCardExpense": False,
-            "TransactionName": description
+            "Reason": "Ecommerce purchase identified."
         }, 0.7, "RULE_ECOMMERCE_PURCHASE"
     return None
 
@@ -95,8 +99,9 @@ def rule_credit_card_payment(
             "TransactionClassification": "Credit Card Payment",
             "MerchantClassification": "Credit Card Company",
             "NormalizedEntity": "Credit Card Company",
+            "TransactionName": description,
             "IsCreditCardExpense": True,
-            "TransactionName": description
+            "Reason": "Credit card payment identified."
         }, 0.7, "RULE_CREDIT_CARD_PAYMENT"
     return None
 
@@ -108,7 +113,7 @@ def rule_fallback(
         "TransactionClassification": "Other",
         "MerchantClassification": "Other",
         "NormalizedEntity": "Other",
+        "TransactionName": description,
         "IsCreditCardExpense": False,
-        "TransactionName": description
+        "Reason": "No specific rule matched; defaulted to fallback."
     }, 0.1, "RULE_FALLBACK"
-
